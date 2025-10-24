@@ -20,5 +20,36 @@ It connects to the Spotify Web API, reads the *valence* (happiness) and *energy*
 
 ---
 
-## 📁 Folder Structure
+## 📱 Android ViewModel & Repository Παράδειγμα
 
+Αν τα πεδία *energy* και *valence* επιστρέφουν συνεχώς `0.0`, το πρόβλημα συνήθως είναι ότι η κλήση API δεν ζητά τα **audio features** του κομματιού. 
+Το ακόλουθο παράδειγμα Kotlin (συμβατό με Android Studio, Retrofit 2.11 και Kotlin Coroutines 1.8) δείχνει πώς μπορείς να αντλήσεις τις σωστές τιμές και να τις εμφανίσεις σε ένα `ViewModel`.
+
+```kotlin
+// build.gradle (module)
+dependencies {
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
+}
+```
+
+```kotlin
+// Δημιούργησε το Retrofit service.
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://api.spotify.com/")
+    .addConverterFactory(MoshiConverterFactory.create())
+    .build()
+
+val api = retrofit.create(SpotifyApiService::class.java)
+
+// Πέρασε το στο repository και στο ViewModel.
+val repository = SpotifyMoodRepository(api)
+val viewModel = MoodViewModel(repository)
+
+// Όπου χρειάζεται, κάλεσε:
+viewModel.refresh(accessToken = "BQD...")
+```
+
+Οι βασικές κλάσεις βρίσκονται στους φακέλους `app/src/main/java/com/example/spotifymood/`.
