@@ -11,7 +11,9 @@ class SpotifyMoodRepository(
     suspend fun loadCurrentMood(accessToken: String): MoodSnapshot? = withContext(Dispatchers.IO) {
         val bearer = "Bearer $accessToken"
         val currentlyPlaying = api.getCurrentlyPlaying(bearer) ?: return@withContext null
-        val trackId = currentlyPlaying.item?.id ?: return@withContext null
+        val trackId = currentlyPlaying.item?.id
+            ?: currentlyPlaying.item?.uri?.substringAfterLast(":")
+            ?: return@withContext null
 
         val audioFeatures: AudioFeaturesResponse = api.getAudioFeatures(bearer, trackId)
         val energy = audioFeatures.energy ?: return@withContext null
